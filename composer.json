@@ -1,0 +1,55 @@
+{
+    "name": "emilklindt/laravel-marker-clusterer",
+    "description": "Display a large number of markers with server-side clustering in Laravel",
+    "keywords": [
+        "php",
+        "laravel",
+        "marker",
+        "clustering",
+        "server-side"
+    ],
+    "homepage": "https://github.com/emilklindt/laravel-marker-clustering",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Emil Klindt Sørensen",
+            "email": "emilklindt@gmail.com",
+            "homepage": "https://github.com/emilklindt"
+        }
+    ],
+    "require": {
+        "php": "^7.4|^8.0",
+        "illuminate/support": ">=5.1",
+        "spatie/data-transfer-object": "2.8.3",
+        "league/geotools": "^0.8.3"
+    },
+    "require-dev": {
+        "mockery/mockery": "^1.4",
+        "orchestra/testbench": "^5.0|^6.0",
+        "phpunit/phpunit": "^9.3"
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+    },
+    "autoload": {
+        "psr-4": {
+            "EmilKlindt\\MarkerClusterer\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "EmilKlindt\\MarkerClusterer\\Test\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "EmilKlindt\\MarkerClusterer\\MarkerClustererServiceProvider"
+            ],
+            "aliases": {
+                "KMeansClusterer": "EmilKlindt\\MarkerClusterer\\Clusterers\\KMeansClusterer"
+            }
+        }
+    }
+}
