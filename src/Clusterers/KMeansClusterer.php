@@ -57,6 +57,10 @@ class KMeansClusterer extends BaseClusterer
      */
     public function getClusters(): Collection
     {
+        if ($this->markers->count() === 0) {
+            return new Collection();
+        }
+
         $samples = new Collection();
 
         // retrive multiple clustering samples, from different
