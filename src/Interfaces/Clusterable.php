@@ -1,8 +1,8 @@
 <?php
 
-namespace EmilKlindt\MarkerClustering\Interfaces;
+namespace EmilKlindt\MarkerClusterer\Interfaces;
 
-use EmilKlindt\MarkerClustering\Models\Coordinate;
+use League\Geotools\Coordinate\Coordinate;
 
 interface Clusterable
 {

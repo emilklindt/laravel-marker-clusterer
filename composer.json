@@ -1,5 +1,5 @@
 {
-    "name": "emilklindt/laravel-marker-clustering",
+    "name": "emilklindt/laravel-marker-clusterer",
     "description": "Display a large number of markers with server-side clustering in Laravel",
     "keywords": [
         "php",
@@ -21,7 +21,8 @@
     "require": {
         "php": "^7.4|^8.0",
         "illuminate/support": ">=5.1",
-        "spatie/data-transfer-object": "2.8.3"
+        "spatie/data-transfer-object": "2.8.3",
+        "league/geotools": "^0.8.3"
     },
     "require-dev": {
         "mockery/mockery": "^1.4",

@@ -1,21 +1,20 @@
 <?php
 
-namespace EmilKlindt\MarkerClustering\Models;
+namespace EmilKlindt\MarkerClusterer\Models;
 
 use Illuminate\Support\Collection;
+use League\Geotools\Coordinate\Coordinate;
 use Spatie\DataTransferObject\DataTransferObject;
-use EmilKlindt\MarkerClustering\Models\Coordinate;
-use EmilKlindt\MarkerClustering\Interfaces\Clusterable;
 
 class Cluster extends DataTransferObject
 {
     /**
      * List of points in this cluster
      */
-    public Collection $points;
+    public Collection $markers;
 
     /**
      * The center point of the cluster
      */
-    public Coordinate $center;
+    public ?Coordinate $centroid;
 }

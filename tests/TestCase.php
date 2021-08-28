@@ -1,6 +1,6 @@
 <?php
 
-namespace EmilKlindt\MarkerClustering\Tests;
+namespace EmilKlindt\MarkerClusterer\Tests;
 
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
