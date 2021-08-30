@@ -32,6 +32,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Default Maximum Convergence Distance
+    |--------------------------------------------------------------------------
+    |
+    | The maximum distance between iterations to count a cluster as converged,
+    | meaning that no further iteration is necessary. A higher value can provide
+    | better performance, due to the need of doing less iterations. A lower value
+    | will ensure that a cluster has actually converged.
+    |
+    */
+
+    'default_convergence_maximum' => 100,
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Maximum Samples
     |--------------------------------------------------------------------------
     |
