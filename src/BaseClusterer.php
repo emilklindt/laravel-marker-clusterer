@@ -64,6 +64,7 @@ abstract class BaseClusterer
             'samples' => config('marker-clusterer.default_maximum_samples'),
             'iterations' => config('marker-clusterer.default_maximum_iterations'),
             'distanceFormula' => config('marker-clusterer.default_distance_formula'),
+            'convergenceMaximum' => config('marker-clusterer.default_convergence_maximum'),
         ];
 
         foreach ($map as $key => $value) {

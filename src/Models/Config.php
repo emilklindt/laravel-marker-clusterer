@@ -19,6 +19,14 @@ class Config extends DataTransferObject
     public ?int $iterations;
 
     /**
+     * Maximum movement of a cluster between iterations,
+     * for it to count as convergence
+     *
+     * @see config/marker-clusterer.php
+     */
+    public ?int $convergenceMaximum;
+
+    /**
      * Maximum number of clustering samples
      *
      * @see config/marker-clusterer.php

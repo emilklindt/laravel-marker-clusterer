@@ -34,6 +34,7 @@ class KMeansClusterer extends BaseClusterer
         return is_int($this->config->k)
             && is_int($this->config->iterations)
             && is_int($this->config->samples)
+            && is_int($this->config->convergenceMaximum)
             && in_array($this->config->distanceFormula, DistanceFormula::getConstants());
     }
 
@@ -188,7 +189,8 @@ class KMeansClusterer extends BaseClusterer
     {
         return $this->clusters
             ->every(function (Cluster $cluster, int $index) use ($centroids) {
-                return $cluster->centroid == $centroids->get($index);
+                return $this->distanceCalculator->measure($cluster->centroid, $centroids->get($index))
+                    <= $this->config->convergenceMaximum;
             });
     }
 
