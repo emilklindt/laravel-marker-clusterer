@@ -1,6 +1,6 @@
 <?php
 
-namespace EmilKlindt\MarkerClusterer\Test;
+namespace EmilKlindt\MarkerClusterer\Test\Clusterers;
 
 use EmilKlindt\MarkerClusterer\Models\Config;
 use EmilKlindt\MarkerClusterer\Test\TestCase;

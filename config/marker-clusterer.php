@@ -58,5 +58,5 @@ return [
     |
     */
 
-    'default_distance_formula' => DistanceFormula::HAVERSINE,
+    'default_distance_formula' => DistanceFormula::MANHATTAN,
 ];
