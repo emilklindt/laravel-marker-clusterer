@@ -1,11 +1,11 @@
 <?php
 
-namespace EmilKlindt\MarkerClusterer\Test\Support;
+namespace EmilKlindt\MarkerClusterer\Tests\Support;
 
-use EmilKlindt\MarkerClusterer\Enums\DistanceFormula;
 use InvalidArgumentException;
 use League\Geotools\Coordinate\Coordinate;
 use EmilKlindt\MarkerClusterer\Test\TestCase;
+use EmilKlindt\MarkerClusterer\Enums\DistanceFormula;
 use EmilKlindt\MarkerClusterer\Support\DistanceCalculator;
 
 class DistanceCalculatorTest extends TestCase
@@ -14,7 +14,6 @@ class DistanceCalculatorTest extends TestCase
     {
         return [
             [DistanceFormula::FLAT],
-            [DistanceFormula::VINCENTY],
             [DistanceFormula::HAVERSINE],
             [DistanceFormula::GREAT_CIRCLE],
         ];

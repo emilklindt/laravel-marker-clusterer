@@ -2,13 +2,15 @@
 
 namespace EmilKlindt\MarkerClusterer;
 
+use RuntimeException;
 use Illuminate\Support\Collection;
 use League\Geotools\Coordinate\Coordinate;
 use EmilKlindt\MarkerClusterer\Models\Config;
 use EmilKlindt\MarkerClusterer\Models\Cluster;
 use EmilKlindt\MarkerClusterer\Interfaces\Clusterable;
-use EmilKlindt\MarkerClusterer\Exceptions\InvalidAlgorithmConfig;
 use EmilKlindt\MarkerClusterer\Support\DistanceCalculator;
+use EmilKlindt\MarkerClusterer\Exceptions\IllegalConfigChange;
+use EmilKlindt\MarkerClusterer\Exceptions\InvalidAlgorithmConfig;
 
 abstract class BaseClusterer
 {
@@ -34,31 +36,47 @@ abstract class BaseClusterer
 
     /**
      * Create a new instance of the clusterer.
-     *
-     * @throws InvalidAlgorithmConfig
      */
     public function __construct(?Config $config = null)
     {
-        $this->config = $config ?: new Config();
-
         $this->markers = new Collection();
         $this->clusters = new Collection();
 
+        if ($config instanceof Config) {
+            $this->setConfig($config);
+        }
+
+        $this->setup();
+    }
+
+    /**
+     * Set the config of the clusterer.
+     *
+     * @throws IllegalConfigChange
+     * @throws InvalidAlgorithmConfig
+     */
+    public function setConfig(Config $config): self
+    {
+        if ($this->markers->count() !== 0 || $this->clusters->count() !== 0) {
+            throw new IllegalConfigChange('Cannot change config after clustering');
+        }
+
+        $this->config = $config;
         $this->mergeDefaultConfig();
 
         if (!$this->validateConfig()) {
             throw new InvalidAlgorithmConfig('Config invalid for algorithm', $this->config);
         }
 
-        $this->setup();
-
         $this->distanceCalculator = new DistanceCalculator($this->config->distanceFormula);
+
+        return $this;
     }
 
     /**
-     * If not set already, set specified config value for key
+     * If not set already, set specified config value for key.
      */
-    protected function setDefaultConfig(string $key, ?mixed $value = null): bool
+    protected function setDefaultConfigValue(string $key, $value = null): bool
     {
         if (is_null($this->config->$key) && !is_null($value)) {
             $this->config->$key = $value;
@@ -99,12 +117,12 @@ abstract class BaseClusterer
     /**
      * Add a new marker to the clusterer.
      */
-    abstract function addMarker(Clusterable $marker): void;
+    public abstract function addMarker(Clusterable $marker): self;
 
     /**
      * Get the clusters derived from the added markers.
      */
-    abstract function getClusters(): Collection;
+    public abstract function getClusters(): Collection;
 
     /**
      * Calculate the mean of each clusters as new centroid.

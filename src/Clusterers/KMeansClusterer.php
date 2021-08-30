@@ -23,10 +23,10 @@ class KMeansClusterer extends BaseClusterer
      */
     protected function mergeDefaultConfig(): void
     {
-        $this->setDefaultConfig('samples', config('marker-clusterer.k_means.default_maximum_samples'));
-        $this->setDefaultConfig('iterations', config('marker-clusterer.k_means.default_maximum_iterations'));
-        $this->setDefaultConfig('distanceFormula', config('marker-clusterer.k_means.default_distance_formula'));
-        $this->setDefaultConfig('convergenceMaximum', config('marker-clusterer.k_means.default_convergence_maximum'));
+        $this->setDefaultConfigValue('samples', config('marker-clusterer.k_means.default_maximum_samples'));
+        $this->setDefaultConfigValue('iterations', config('marker-clusterer.k_means.default_maximum_iterations'));
+        $this->setDefaultConfigValue('distanceFormula', config('marker-clusterer.k_means.default_distance_formula'));
+        $this->setDefaultConfigValue('convergenceMaximum', config('marker-clusterer.k_means.default_convergence_maximum'));
     }
 
     /**
@@ -52,10 +52,12 @@ class KMeansClusterer extends BaseClusterer
     /**
      * Add a new marker to the clusterer.
      */
-    public function addMarker(Clusterable $marker): void
+    public function addMarker(Clusterable $marker): self
     {
         $this->markers->add($marker);
         $this->coordinates->add($marker->getClusterableCoordinate());
+
+        return $this;
     }
 
     /**

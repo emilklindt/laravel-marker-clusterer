@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default_clusterer' => 'DensityBasedSpatialClusterer',
+    'default_clusterer' => 'density-based-spatial-clusterer',
 
     /*
     |--------------------------------------------------------------------------

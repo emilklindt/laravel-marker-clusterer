@@ -31,7 +31,7 @@ class DensityBasedSpatialClusterer extends BaseClusterer
      */
     protected function mergeDefaultConfig(): void
     {
-        $this->setDefaultConfig('includeNoise', config('marker-clusterer.dbscan.default_include_noise'));
+        $this->setDefaultConfigValue('includeNoise', config('marker-clusterer.dbscan.default_include_noise'));
     }
 
     /**
@@ -56,10 +56,12 @@ class DensityBasedSpatialClusterer extends BaseClusterer
     /**
      * Add a new marker to the clusterer
      */
-    public function addMarker(Clusterable $marker): void
+    public function addMarker(Clusterable $marker): self
     {
         $this->markers->add($marker);
         $this->coordinates->add($marker->getClusterableCoordinate());
+
+        return $this;
     }
 
     /**

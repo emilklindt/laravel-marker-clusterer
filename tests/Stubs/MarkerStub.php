@@ -20,10 +20,10 @@ class MarkerStub implements Clusterable
     /**
      * Create a new point instance
      */
-    public function __construct(float $latitude, float $longitude)
+    public function __construct(array $coordinate)
     {
-        $this->latitude = $latitude;
-        $this->longitude = $longitude;
+        $this->latitude = $coordinate['lat'];
+        $this->longitude = $coordinate['lng'];
     }
 
     /**

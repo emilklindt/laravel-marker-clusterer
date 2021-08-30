@@ -1,35 +1,17 @@
 <?php
 
-namespace EmilKlindt\MarkerClusterer\Test\Clusterers;
+namespace EmilKlindt\MarkerClusterer\Tests\Clusterers;
 
 use EmilKlindt\MarkerClusterer\Models\Config;
 use EmilKlindt\MarkerClusterer\Test\TestCase;
 use EmilKlindt\MarkerClusterer\Models\Cluster;
 use EmilKlindt\MarkerClusterer\Enums\DistanceFormula;
-use EmilKlindt\MarkerClusterer\Test\Stubs\MarkerStub;
 use EmilKlindt\MarkerClusterer\Exceptions\InvalidAlgorithmConfig;
 use EmilKlindt\MarkerClusterer\Clusterers\DensityBasedSpatialClusterer;
+use EmilKlindt\MarkerClusterer\Interfaces\Clusterable;
 
 class DensityBasedSpatialClustererTest extends TestCase
 {
-    private function getValidConfig()
-    {
-        return new Config([
-            'epsilon' => 5.0,
-            'minSamples' => 3,
-            'includeNoise' => false,
-            'distanceFormula' => DistanceFormula::MANHATTAN,
-        ]);
-    }
-
-    private function getRandomMarker()
-    {
-        return new MarkerStub(
-            mt_rand(-90, 90),
-            mt_rand(-180, 180)
-        );
-    }
-
     /** @test */
     public function it_fails_with_invalid_config()
     {
@@ -43,7 +25,7 @@ class DensityBasedSpatialClustererTest extends TestCase
     /** @test */
     public function it_validates_valid_config()
     {
-        $config = $this->getValidConfig();
+        $config = $this->configFactory->make();
 
         new DensityBasedSpatialClusterer($config);
 
@@ -53,14 +35,16 @@ class DensityBasedSpatialClustererTest extends TestCase
     /** @test */
     public function it_successfully_includes_noise()
     {
-        $config = $this->getValidConfig();
-        $config->includeNoise = true;
+        $config = $this->configFactory->make([
+            'minSamples' => 2,
+            'includeNoise' => true,
+        ]);
 
         $clusterer = new DensityBasedSpatialClusterer($config);
-        $marker = $this->getRandomMarker();
-        $clusterer->addMarker($marker);
 
-        $clusters = $clusterer->getClusters();
+        $clusters = $clusterer
+            ->addMarker($marker = $this->makeMarker())
+            ->getClusters();
 
         $this->assertCount(1, $clusters);
         $this->assertEquals($marker, $clusters->first()->markers->first());
@@ -69,14 +53,16 @@ class DensityBasedSpatialClustererTest extends TestCase
     /** @test */
     public function it_successfully_excludes_noise()
     {
-        $config = $this->getValidConfig();
-        $config->includeNoise = false;
+        $config = $this->configFactory->make([
+            'minSamples' => 2,
+            'includeNoise' => false,
+        ]);
 
         $clusterer = new DensityBasedSpatialClusterer($config);
-        $marker = $this->getRandomMarker();
-        $clusterer->addMarker($marker);
 
-        $clusters = $clusterer->getClusters();
+        $clusters = $clusterer
+            ->addMarker($this->makeMarker())
+            ->getClusters();
 
         $this->assertCount(0, $clusters);
     }
@@ -94,13 +80,13 @@ class DensityBasedSpatialClustererTest extends TestCase
         $clusterer = new DensityBasedSpatialClusterer($config);
 
         // city 1
-        $clusterer->addMarker(new MarkerStub(55.373772, 10.411701));
-        $clusterer->addMarker(new MarkerStub(55.375606, 10.409265));
-        $clusterer->addMarker(new MarkerStub(55.377179, 10.413943));
+        $clusterer->addMarker($this->makeMarker(['lat' => 55.373772, 'lng' => 10.411701]));
+        $clusterer->addMarker($this->makeMarker(['lat' => 55.375606, 'lng' => 10.409265]));
+        $clusterer->addMarker($this->makeMarker(['lat' => 55.377179, 'lng' => 10.413943]));
 
         // city 2
-        $clusterer->addMarker(new MarkerStub(55.784164, 12.524051));
-        $clusterer->addMarker(new MarkerStub(55.785509, 12.522738));
+        $clusterer->addMarker($this->makeMarker(['lat' => 55.784164, 'lng' => 12.524051]));
+        $clusterer->addMarker($this->makeMarker(['lat' => 55.785509, 'lng' => 12.522738]));
 
         $clusters = $clusterer->getClusters();
 
@@ -110,7 +96,7 @@ class DensityBasedSpatialClustererTest extends TestCase
             return $cluster->markers->count();
         }));
 
-        $this->assertContainsOnlyInstancesOf(MarkerStub::class, $clusters
+        $this->assertContainsOnlyInstancesOf(Clusterable::class, $clusters
             ->map(function (Cluster $cluster) {
                 return $cluster->markers;
             })

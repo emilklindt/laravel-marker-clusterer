@@ -1,36 +1,16 @@
 <?php
 
-namespace EmilKlindt\MarkerClusterer\Test\Clusterers;
+namespace EmilKlindt\MarkerClusterer\Tests\Clusterers;
 
 use EmilKlindt\MarkerClusterer\Models\Config;
 use EmilKlindt\MarkerClusterer\Test\TestCase;
 use EmilKlindt\MarkerClusterer\Models\Cluster;
 use EmilKlindt\MarkerClusterer\Enums\DistanceFormula;
-use EmilKlindt\MarkerClusterer\Test\Stubs\MarkerStub;
 use EmilKlindt\MarkerClusterer\Clusterers\KMeansClusterer;
 use EmilKlindt\MarkerClusterer\Exceptions\InvalidAlgorithmConfig;
 
 class KMeansClustererTest extends TestCase
 {
-    private function getValidConfig()
-    {
-        return new Config([
-            'k' => 3,
-            'iterations' => 10,
-            'samples' => 10,
-            'distanceFormula' => DistanceFormula::HAVERSINE,
-            'convergenceMaximum' => 1000,
-        ]);
-    }
-
-    private function getRandomMarker()
-    {
-        return new MarkerStub(
-            mt_rand(-90, 90),
-            mt_rand(-180, 180)
-        );
-    }
-
     /** @test */
     public function it_fails_with_invalid_config()
     {
@@ -44,7 +24,7 @@ class KMeansClustererTest extends TestCase
     /** @test */
     public function it_validates_valid_config()
     {
-        $config = $this->getValidConfig();
+        $config = $this->configFactory->make();
 
         new KMeansClusterer($config);
 
@@ -54,13 +34,11 @@ class KMeansClustererTest extends TestCase
     /** @test */
     public function it_successfully_adds_markers()
     {
-        $clusterer = new KMeansClusterer($this->getValidConfig());
+        $clusterer = new KMeansClusterer($this->configFactory->make());
 
-        $marker = new MarkerStub($lat = 55, $lng = 9);
-
-        $clusterer->addMarker($marker);
-
-        $clusters = $clusterer->getClusters();
+        $clusters = $clusterer
+            ->addMarker($marker = $this->makeMarker(['lat' => 55, 'lng' => 9]))
+            ->getClusters();
 
         $this->assertCount(1, $clusters);
         $this->assertEquals($marker, $clusters->first()->markers->first());
@@ -69,13 +47,13 @@ class KMeansClustererTest extends TestCase
     /** @test */
     public function it_successfully_clusters_larger_than_k_markers()
     {
-        $config = $this->getValidConfig();
+        $config = $this->configFactory->make();
         $config->k = 3;
 
         $clusterer = new KMeansClusterer($config);
 
         for ($i = 0; $i < $n = 50; $i++) {
-            $clusterer->addMarker($this->getRandomMarker());
+            $clusterer->addMarker($this->makeMarker());
         }
 
         $clusters = $clusterer->getClusters();
