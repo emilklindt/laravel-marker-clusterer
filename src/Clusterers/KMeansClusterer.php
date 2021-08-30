@@ -19,17 +19,11 @@ class KMeansClusterer extends BaseClusterer
     private Collection $coordinates;
 
     /**
-     * Geotools instance used for distance calculation
-     */
-    private Geotools $geotools;
-
-    /**
      * Perform necessary setup of the algorithm
      */
     protected function setup(): void
     {
         $this->coordinates = new Collection();
-        $this->geotools = new Geotools();
     }
 
     /**
@@ -153,18 +147,12 @@ class KMeansClusterer extends BaseClusterer
     {
         $this->markers
             ->each(function (Clusterable $marker, int $index) {
-                $nearest = $this->clusters
+                $this->clusters
                     ->sortBy(function (Cluster $cluster) use ($index) {
-                        $distance = $this->geotools
-                            ->distance()
-                            ->setFrom($cluster->centroid)
-                            ->setTo($this->coordinates->get($index));
-
-                        return $distance->{$this->config->distanceFormula}();
+                        return $this->distanceCalculator
+                            ->measure($cluster->centroid, $this->coordinates->get($index));
                     })
-                    ->first();
-
-                $nearest
+                    ->first()
                     ->markers
                     ->add($marker);
             });

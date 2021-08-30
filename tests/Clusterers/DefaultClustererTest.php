@@ -1,6 +1,6 @@
 <?php
 
-namespace EmilKlindt\MarkerClusterer\Test;
+namespace EmilKlindt\MarkerClusterer\Test\Clusterers;
 
 use Mockery;
 use Mockery\MockInterface;

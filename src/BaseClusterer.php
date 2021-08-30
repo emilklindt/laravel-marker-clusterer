@@ -8,6 +8,7 @@ use EmilKlindt\MarkerClusterer\Models\Config;
 use EmilKlindt\MarkerClusterer\Models\Cluster;
 use EmilKlindt\MarkerClusterer\Interfaces\Clusterable;
 use EmilKlindt\MarkerClusterer\Exceptions\InvalidAlgorithmConfig;
+use EmilKlindt\MarkerClusterer\Support\DistanceCalculator;
 
 abstract class BaseClusterer
 {
@@ -25,6 +26,11 @@ abstract class BaseClusterer
      * Collection of clusters with markers
      */
     protected Collection $clusters;
+
+    /**
+     * Determine distance between markers
+     */
+    protected DistanceCalculator $distanceCalculator;
 
     /**
      * Create a new instance of the clusterer
@@ -45,6 +51,8 @@ abstract class BaseClusterer
         }
 
         $this->setup();
+
+        $this->distanceCalculator = new DistanceCalculator($this->config->distanceFormula);
     }
 
     /**

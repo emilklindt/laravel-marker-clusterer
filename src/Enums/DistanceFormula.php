@@ -9,8 +9,12 @@ use EmilKlindt\MarkerClusterer\Enums\BaseEnum;
  */
 final class DistanceFormula extends BaseEnum
 {
+    // geotools
     const FLAT = 'flat';
-    const GREAT_CIRCLE = 'greatCircle';
-    const HAVERSINE = 'haversine';
     const VINCENTY = 'vincenty';
+    const HAVERSINE = 'haversine';
+    const GREAT_CIRCLE = 'greatCircle';
+
+    // custom
+    const MANHATTAN = 'manhattan';
 }
