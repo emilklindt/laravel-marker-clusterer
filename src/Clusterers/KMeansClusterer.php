@@ -14,12 +14,23 @@ use EmilKlindt\MarkerClusterer\Exceptions\UnexpectedClusterCountChange;
 class KMeansClusterer extends BaseClusterer
 {
     /**
-     * Temporary collection for caching of coordinates
+     * Temporary collection for caching of coordinates.
      */
     private Collection $coordinates;
 
     /**
-     * Perform necessary setup of the algorithm
+     * Merge the provided config with default values.
+     */
+    protected function mergeDefaultConfig(): void
+    {
+        $this->setDefaultConfig('samples', config('marker-clusterer.k_means.default_maximum_samples'));
+        $this->setDefaultConfig('iterations', config('marker-clusterer.k_means.default_maximum_iterations'));
+        $this->setDefaultConfig('distanceFormula', config('marker-clusterer.k_means.default_distance_formula'));
+        $this->setDefaultConfig('convergenceMaximum', config('marker-clusterer.k_means.default_convergence_maximum'));
+    }
+
+    /**
+     * Perform necessary setup of the algorithm.
      */
     protected function setup(): void
     {
@@ -27,7 +38,7 @@ class KMeansClusterer extends BaseClusterer
     }
 
     /**
-     * Validate that the config is sufficient for the algorithm
+     * Validate that the config is sufficient for the algorithm.
      */
     public function validateConfig(): bool
     {
@@ -39,7 +50,7 @@ class KMeansClusterer extends BaseClusterer
     }
 
     /**
-     * Add a new marker to the clusterer
+     * Add a new marker to the clusterer.
      */
     public function addMarker(Clusterable $marker): void
     {
@@ -48,7 +59,7 @@ class KMeansClusterer extends BaseClusterer
     }
 
     /**
-     * Get the clusters derived from the added markers
+     * Get the clusters derived from the added markers.
      */
     public function getClusters(): Collection
     {
@@ -78,7 +89,7 @@ class KMeansClusterer extends BaseClusterer
 
     /**
      * Iteratively cluster the markers from initially
-     * random set of centroids
+     * random set of centroids.
      */
     private function solve(): void
     {
@@ -108,7 +119,7 @@ class KMeansClusterer extends BaseClusterer
     }
 
     /**
-     * Randomly select k distinct centroids
+     * Randomly select k distinct centroids.
      */
     private function randomlyAssignCentroids(): void
     {
@@ -130,7 +141,7 @@ class KMeansClusterer extends BaseClusterer
     }
 
     /**
-     * Remove markers from clusters they were previously assigend to
+     * Remove markers from clusters they were previously assigend to.
      */
     private function clearAssignedClusterMarkers(): void
     {
@@ -142,7 +153,7 @@ class KMeansClusterer extends BaseClusterer
 
     /**
      * Measure the distance for each marker to the centroids, and
-     * assign each to the closest centroid/cluster
+     * assign each to the closest centroid/cluster.
      */
     private function assignMarkersToNearestCluster(): void
     {
@@ -160,30 +171,7 @@ class KMeansClusterer extends BaseClusterer
     }
 
     /**
-     * Calculate the mean of each clusters as new centroid
-     */
-    private function updateClusterCentroids(): void
-    {
-        $this->clusters
-            ->each(function (Cluster $cluster) {
-                $coordinates = $cluster->markers
-                    ->map(function (Clusterable $marker) {
-                        return $marker->getClusterableCoordinate();
-                    });
-
-                $cluster->centroid = new Coordinate([
-                    $coordinates->avg(function (Coordinate $coordinate) {
-                        return $coordinate->getLatitude();
-                    }),
-                    $coordinates->avg(function (Coordinate $coordinate) {
-                        return $coordinate->getLongitude();
-                    })
-                ]);
-            });
-    }
-
-    /**
-     * Check whether the algorithm has reached convergence
+     * Check whether the algorithm has reached convergence.
      */
     private function hasConverged(Collection $centroids): bool
     {
@@ -195,7 +183,7 @@ class KMeansClusterer extends BaseClusterer
     }
 
     /**
-     * Retrieve collection of cluster centroids
+     * Retrieve collection of cluster centroids.
      */
     private function getClusterCentroids(): Collection
     {
@@ -206,7 +194,7 @@ class KMeansClusterer extends BaseClusterer
     }
 
     /**
-     * Get the sum of variance for the clusters in sample
+     * Get the sum of variance for the clusters in sample.
      */
     private function getSampleVariance(Collection $sample): float
     {

@@ -11,22 +11,22 @@ use League\Geotools\Distance\Distance;
 class DistanceCalculator
 {
     /**
-     * The formula used for calculating distance
+     * The formula used for calculating distance.
      */
     private string $formula;
 
     /**
-     * Geotools instance used for euclidean distance
+     * Geotools instance used for euclidean distance.
      */
     private Geotools $geotools;
 
     /**
-     * Geotools distance instance used for euclidean distance
+     * Geotools distance instance used for euclidean distance.
      */
     private Distance $distance;
 
     /**
-     * Create a new instance of the distance calculator
+     * Create a new instance of the distance calculator.
      *
      * @param DistanceFormula $formula
      */
@@ -43,7 +43,7 @@ class DistanceCalculator
     }
 
     /**
-     * Measure distance from one coordinate to another
+     * Measure distance from one coordinate to another.
      */
     public function measure(Coordinate $from, Coordinate $to): float
     {
@@ -62,7 +62,7 @@ class DistanceCalculator
 
     /**
      * Measure manhattan distance from one coordinate to another, mostly
-     * useful due to its performance gain over other distance formulas
+     * useful due to its performance gain over other distance formulas.
      */
     private function manhattan(Coordinate $from, Coordinate $to): float
     {

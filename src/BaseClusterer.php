@@ -13,27 +13,27 @@ use EmilKlindt\MarkerClusterer\Support\DistanceCalculator;
 abstract class BaseClusterer
 {
     /**
-     * The configuration of the clusterer
+     * The configuration of the clusterer.
      */
     protected Config $config;
 
     /**
-     * Collection of markers not yet clustered
+     * Collection of markers not yet clustered.
      */
     protected Collection $markers;
 
     /**
-     * Collection of clusters with markers
+     * Collection of clusters with markers.
      */
     protected Collection $clusters;
 
     /**
-     * Determine distance between markers
+     * Determine distance between markers.
      */
     protected DistanceCalculator $distanceCalculator;
 
     /**
-     * Create a new instance of the clusterer
+     * Create a new instance of the clusterer.
      *
      * @throws InvalidAlgorithmConfig
      */
@@ -56,26 +56,20 @@ abstract class BaseClusterer
     }
 
     /**
-     * Merge the provided config with default values
+     * If not set already, set specified config value for key
      */
-    private function mergeDefaultConfig(): void
+    protected function setDefaultConfig(string $key, ?mixed $value = null): bool
     {
-        $map = [
-            'samples' => config('marker-clusterer.default_maximum_samples'),
-            'iterations' => config('marker-clusterer.default_maximum_iterations'),
-            'distanceFormula' => config('marker-clusterer.default_distance_formula'),
-            'convergenceMaximum' => config('marker-clusterer.default_convergence_maximum'),
-        ];
-
-        foreach ($map as $key => $value) {
-            if (is_null($this->config->$key)) {
-                $this->config->$key = $value;
-            }
+        if (is_null($this->config->$key) && !is_null($value)) {
+            $this->config->$key = $value;
+            return true;
         }
+
+        return false;
     }
 
     /**
-     * Retrieve a deep-cloned collection of the clusters
+     * Retrieve a deep-cloned collection of the clusters.
      */
     protected function getClonedClusters(): Collection
     {
@@ -88,33 +82,55 @@ abstract class BaseClusterer
     }
 
     /**
-     * Perform necessary setup of the algorithm
+     * Merge the provided config with default values.
      */
-    protected function setup(): void
-    {
-
-    }
+    protected abstract function mergeDefaultConfig(): void;
 
     /**
-     * Validate that the config is sufficient for the algorithm
+     * Perform necessary setup of the algorithm.
      */
-    protected function validateConfig(): bool
-    {
-        return true;
-    }
+    protected abstract function setup(): void;
 
     /**
-     * Add a new marker to the clusterer
+     * Validate that the config is sufficient for the algorithm.
+     */
+    protected abstract function validateConfig(): bool;
+
+    /**
+     * Add a new marker to the clusterer.
      */
     abstract function addMarker(Clusterable $marker): void;
 
     /**
-     * Get the clusters derived from the added markers
+     * Get the clusters derived from the added markers.
      */
     abstract function getClusters(): Collection;
 
     /**
-     * Shorthand method for clustering a group of markers
+     * Calculate the mean of each clusters as new centroid.
+     */
+    protected function updateClusterCentroids(): void
+    {
+        $this->clusters
+            ->each(function (Cluster $cluster) {
+                $coordinates = $cluster->markers
+                    ->map(function (Clusterable $marker) {
+                        return $marker->getClusterableCoordinate();
+                    });
+
+                $cluster->centroid = new Coordinate([
+                    $coordinates->avg(function (Coordinate $coordinate) {
+                        return $coordinate->getLatitude();
+                    }),
+                    $coordinates->avg(function (Coordinate $coordinate) {
+                        return $coordinate->getLongitude();
+                    })
+                ]);
+            });
+    }
+
+    /**
+     * Shorthand method for clustering a group of markers.
      */
     static function cluster(Collection $markers, ?Config $config = null): Collection
     {

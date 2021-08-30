@@ -48,7 +48,8 @@
                 "EmilKlindt\\MarkerClusterer\\MarkerClustererServiceProvider"
             ],
             "aliases": {
-                "KMeansClusterer": "EmilKlindt\\MarkerClusterer\\Clusterers\\KMeansClusterer"
+                "KMeansClusterer": "EmilKlindt\\MarkerClusterer\\Clusterers\\KMeansClusterer",
+                "DensityBasedSpatialClusterer": "EmilKlindt\\MarkerClusterer\\Clusterers\\DensityBasedSpatialClusterer"
             }
         }
     }
