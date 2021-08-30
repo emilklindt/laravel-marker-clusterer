@@ -19,6 +19,7 @@ class KMeansClustererTest extends TestCase
             'iterations' => 10,
             'samples' => 10,
             'distanceFormula' => DistanceFormula::HAVERSINE,
+            'convergenceMaximum' => 1000,
         ]);
     }
 
