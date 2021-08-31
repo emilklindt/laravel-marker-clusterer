@@ -31,6 +31,7 @@ class DensityBasedSpatialClusterer extends BaseClusterer
      */
     protected function mergeDefaultConfig(): void
     {
+        $this->setDefaultConfigValue('distanceFormula', config('marker-clusterer.default_distance_formula'));
         $this->setDefaultConfigValue('includeNoise', config('marker-clusterer.dbscan.default_include_noise'));
     }
 

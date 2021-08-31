@@ -17,6 +17,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Default Distance Formula
+    |--------------------------------------------------------------------------
+    |
+    | The default formula for calculating distance from one coordinate to
+    | another. Possible values are constants of the DistanceFormula enum.
+    |
+    */
+
+    'default_distance_formula' => \EmilKlindt\MarkerClusterer\Enums\DistanceFormula::MANHATTAN,
+
+    /*
+    |--------------------------------------------------------------------------
     | K-means Clustering
     |--------------------------------------------------------------------------
     |
@@ -71,18 +83,6 @@ return [
         */
 
         'default_maximum_samples' => 10,
-
-        /*
-        |--------------------------------------------------------------------------
-        | Default Distance Formula
-        |--------------------------------------------------------------------------
-        |
-        | The default formula for calculating distance from one coordinate to
-        | another. Possible values are constants of the DistanceFormula enum.
-        |
-        */
-
-        'default_distance_formula' => \EmilKlindt\MarkerClusterer\Enums\DistanceFormula::MANHATTAN,
     ],
 
     /*
