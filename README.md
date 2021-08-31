@@ -4,9 +4,9 @@
 ![MIT License](https://img.shields.io/packagist/l/emilklindt/laravel-marker-clusterer.svg?style=flat-square)
 ![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/emilklindt/laravel-marker-clusterer.svg?style=flat-square)
 
-The `emilklindt/laravel-marker-clusterer` package allows you to cluster markers, before sending them to the client side.
+The `emilklindt/laravel-marker-clusterer` package allows you to cluster markers in Laravel, before sending them to the client-side.
 
-This has the benefits of being less computational intensive for the client (with larger number of markers), and lowers overall network consumption. The cost is *of course* server computation, which might be worth it depending on the use case.
+When serving large datasets it may not be feasible or practical to send all datapoints to the client side. This may be due to the large payload necessary to transfer all datapoints individually, or to avoid undue processing on the client. This project aims to facilitate these cases, with server-side marker clustering for Laravel.
 
 <br/>
 <details open="open">
@@ -219,7 +219,7 @@ See the [clusters](#clusterers) section below for the different clustering metho
 
 ## Clusterers
 
-Contributions or feature requests for other clusterers are welcomed. Feel free to create a pull request or an issue labeled *feature-request*.
+Contributions or feature requests are welcomed. Feel free to create a pull request or post your feature request in the [ideas](https://github.com/emilklindt/laravel-marker-clusterer/discussions/categories/ideas) discussion topic.
 
 ![DBSCAN vs. K-means](./.docs/assets/clusterers.png)
 *Credit: [NSHipster/DBSCAN](https://github.com/NSHipster/DBSCAN) repository*
