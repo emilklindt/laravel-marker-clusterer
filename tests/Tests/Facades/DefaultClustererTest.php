@@ -2,11 +2,14 @@
 
 namespace EmilKlindt\MarkerClusterer\Tests\Facades;
 
+use Illuminate\Support\Collection;
+use EmilKlindt\MarkerClusterer\Models\Config;
 use EmilKlindt\MarkerClusterer\Test\TestCase;
 use EmilKlindt\MarkerClusterer\Facades\DefaultClusterer;
 use EmilKlindt\MarkerClusterer\Clusterers\KMeansClusterer;
 use EmilKlindt\MarkerClusterer\MarkerClustererServiceProvider;
 use EmilKlindt\MarkerClusterer\Clusterers\DensityBasedSpatialClusterer;
+use EmilKlindt\MarkerClusterer\Test\Factories\ConfigFactory;
 
 class DefaultClustererTest extends TestCase
 {
@@ -38,10 +41,17 @@ class DefaultClustererTest extends TestCase
         $this->assertInstanceOf($className, DefaultClusterer::getFacadeRoot());
     }
 
-    public function it_proxies_methods()
+    /**
+     * @test
+     * @dataProvider clustererProvider
+     **/
+    public function it_proxies_methods(string $defaultClusterer)
     {
-        config()->set(self::CONFIG_KEY, 'k-means-clusterer');
+        config()->set(self::CONFIG_KEY, $defaultClusterer);
 
+        $markers = new Collection();
+        $config = $this->configFactory->make();
 
+        $this->assertInstanceOf(Collection::class, DefaultClusterer::cluster($markers, $config));
     }
 }
