@@ -2,80 +2,92 @@
 
 namespace EmilKlindt\MarkerClusterer;
 
+use RuntimeException;
 use Illuminate\Support\Collection;
 use League\Geotools\Coordinate\Coordinate;
 use EmilKlindt\MarkerClusterer\Models\Config;
 use EmilKlindt\MarkerClusterer\Models\Cluster;
 use EmilKlindt\MarkerClusterer\Interfaces\Clusterable;
-use EmilKlindt\MarkerClusterer\Exceptions\InvalidAlgorithmConfig;
 use EmilKlindt\MarkerClusterer\Support\DistanceCalculator;
+use EmilKlindt\MarkerClusterer\Exceptions\IllegalConfigChange;
+use EmilKlindt\MarkerClusterer\Exceptions\InvalidAlgorithmConfig;
 
 abstract class BaseClusterer
 {
     /**
-     * The configuration of the clusterer
+     * The configuration of the clusterer.
      */
     protected Config $config;
 
     /**
-     * Collection of markers not yet clustered
+     * Collection of markers not yet clustered.
      */
     protected Collection $markers;
 
     /**
-     * Collection of clusters with markers
+     * Collection of clusters with markers.
      */
     protected Collection $clusters;
 
     /**
-     * Determine distance between markers
+     * Determine distance between markers.
      */
     protected DistanceCalculator $distanceCalculator;
 
     /**
-     * Create a new instance of the clusterer
-     *
-     * @throws InvalidAlgorithmConfig
+     * Create a new instance of the clusterer.
      */
     public function __construct(?Config $config = null)
     {
-        $this->config = $config ?: new Config();
-
         $this->markers = new Collection();
         $this->clusters = new Collection();
 
+        if ($config instanceof Config) {
+            $this->setConfig($config);
+        }
+
+        $this->setup();
+    }
+
+    /**
+     * Set the config of the clusterer.
+     *
+     * @throws IllegalConfigChange
+     * @throws InvalidAlgorithmConfig
+     */
+    public function setConfig(Config $config): self
+    {
+        if ($this->markers->count() !== 0 || $this->clusters->count() !== 0) {
+            throw new IllegalConfigChange('Cannot change config after clustering');
+        }
+
+        $this->config = $config;
         $this->mergeDefaultConfig();
 
         if (!$this->validateConfig()) {
             throw new InvalidAlgorithmConfig('Config invalid for algorithm', $this->config);
         }
 
-        $this->setup();
-
         $this->distanceCalculator = new DistanceCalculator($this->config->distanceFormula);
+
+        return $this;
     }
 
     /**
-     * Merge the provided config with default values
+     * If not set already, set specified config value for key.
      */
-    private function mergeDefaultConfig(): void
+    protected function setDefaultConfigValue(string $key, $value = null): bool
     {
-        $map = [
-            'samples' => config('marker-clusterer.default_maximum_samples'),
-            'iterations' => config('marker-clusterer.default_maximum_iterations'),
-            'distanceFormula' => config('marker-clusterer.default_distance_formula'),
-            'convergenceMaximum' => config('marker-clusterer.default_convergence_maximum'),
-        ];
-
-        foreach ($map as $key => $value) {
-            if (is_null($this->config->$key)) {
-                $this->config->$key = $value;
-            }
+        if (is_null($this->config->$key) && !is_null($value)) {
+            $this->config->$key = $value;
+            return true;
         }
+
+        return false;
     }
 
     /**
-     * Retrieve a deep-cloned collection of the clusters
+     * Retrieve a deep-cloned collection of the clusters.
      */
     protected function getClonedClusters(): Collection
     {
@@ -88,33 +100,55 @@ abstract class BaseClusterer
     }
 
     /**
-     * Perform necessary setup of the algorithm
+     * Merge the provided config with default values.
      */
-    protected function setup(): void
-    {
+    protected abstract function mergeDefaultConfig(): void;
 
+    /**
+     * Perform necessary setup of the algorithm.
+     */
+    protected abstract function setup(): void;
+
+    /**
+     * Validate that the config is sufficient for the algorithm.
+     */
+    protected abstract function validateConfig(): bool;
+
+    /**
+     * Add a new marker to the clusterer.
+     */
+    public abstract function addMarker(Clusterable $marker): self;
+
+    /**
+     * Get the clusters derived from the added markers.
+     */
+    public abstract function getClusters(): Collection;
+
+    /**
+     * Calculate the mean of each clusters as new centroid.
+     */
+    protected function updateClusterCentroids(): void
+    {
+        $this->clusters
+            ->each(function (Cluster $cluster) {
+                $coordinates = $cluster->markers
+                    ->map(function (Clusterable $marker) {
+                        return $marker->getClusterableCoordinate();
+                    });
+
+                $cluster->centroid = new Coordinate([
+                    $coordinates->avg(function (Coordinate $coordinate) {
+                        return $coordinate->getLatitude();
+                    }),
+                    $coordinates->avg(function (Coordinate $coordinate) {
+                        return $coordinate->getLongitude();
+                    })
+                ]);
+            });
     }
 
     /**
-     * Validate that the config is sufficient for the algorithm
-     */
-    protected function validateConfig(): bool
-    {
-        return true;
-    }
-
-    /**
-     * Add a new marker to the clusterer
-     */
-    abstract function addMarker(Clusterable $marker): void;
-
-    /**
-     * Get the clusters derived from the added markers
-     */
-    abstract function getClusters(): Collection;
-
-    /**
-     * Shorthand method for clustering a group of markers
+     * Shorthand method for clustering a group of markers.
      */
     static function cluster(Collection $markers, ?Config $config = null): Collection
     {

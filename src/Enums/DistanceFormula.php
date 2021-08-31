@@ -11,7 +11,6 @@ final class DistanceFormula extends BaseEnum
 {
     // geotools
     const FLAT = 'flat';
-    const VINCENTY = 'vincenty';
     const HAVERSINE = 'haversine';
     const GREAT_CIRCLE = 'greatCircle';
 

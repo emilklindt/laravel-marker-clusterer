@@ -1,15 +1,24 @@
 <?php
 
-namespace EmilKlindt\MarkerClusterer\Test\Support;
+namespace EmilKlindt\MarkerClusterer\Tests\Support;
 
-use EmilKlindt\MarkerClusterer\Enums\DistanceFormula;
 use InvalidArgumentException;
 use League\Geotools\Coordinate\Coordinate;
 use EmilKlindt\MarkerClusterer\Test\TestCase;
+use EmilKlindt\MarkerClusterer\Enums\DistanceFormula;
 use EmilKlindt\MarkerClusterer\Support\DistanceCalculator;
 
 class DistanceCalculatorTest extends TestCase
 {
+    public function geotoolsDistanceFormulasProvider(): array
+    {
+        return [
+            [DistanceFormula::FLAT],
+            [DistanceFormula::HAVERSINE],
+            [DistanceFormula::GREAT_CIRCLE],
+        ];
+    }
+
     /** @test */
     public function it_throws_exception_for_invalid_distance_formula()
     {
@@ -18,8 +27,11 @@ class DistanceCalculatorTest extends TestCase
         new DistanceCalculator('invalid');
     }
 
-    /** @test */
-    public function it_calculates_distance_correctly_using_geotools()
+    /**
+     * @test
+     * @dataProvider geotoolsDistanceFormulasProvider
+     */
+    public function it_calculates_distance_correctly_using_geotools(string $formula)
     {
         $from = new Coordinate([
             55.439657,
@@ -31,10 +43,10 @@ class DistanceCalculatorTest extends TestCase
             8.685348
         ]);
 
-        $calculator = new DistanceCalculator(DistanceFormula::HAVERSINE);
+        $calculator = new DistanceCalculator($formula);
         $distance = $calculator->measure($from, $to);
 
-        $this->assertEqualsWithDelta(255745, $distance, 100);
+        $this->assertEqualsWithDelta(255745, $distance, 500);
     }
 
     /** @test */
