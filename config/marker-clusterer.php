@@ -1,7 +1,5 @@
 <?php
 
-use EmilKlindt\MarkerClusterer\Enums\DistanceFormula;
-
 return [
 
     /*
@@ -54,7 +52,7 @@ return [
         |
         */
 
-        'default_convergence_maximum' => 100,
+        'default_convergence_maximum' => 100.0,
 
         /*
         |--------------------------------------------------------------------------
@@ -84,7 +82,7 @@ return [
         |
         */
 
-        'default_distance_formula' => DistanceFormula::MANHATTAN,
+        'default_distance_formula' => \EmilKlindt\MarkerClusterer\Enums\DistanceFormula::MANHATTAN,
     ],
 
     /*

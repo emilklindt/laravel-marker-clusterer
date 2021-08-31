@@ -24,8 +24,8 @@ class ConfigFactory extends Factory
             'samples' => $this->faker->randomDigitNotZero(),
             'iterations' => $this->faker->randomDigitNotZero(),
             'minSamples' => $this->faker->randomDigitNotZero(),
-            'epsilon' => $this->faker->randomFloat(null, 0, 1000),
-            'convergenceMaximum' => $this->faker->randomDigitNotZero(),
+            'epsilon' => $this->faker->randomFloat(2, 0, 1000),
+            'convergenceMaximum' => $this->faker->randomFloat(2, 0, 1000),
             'distanceFormula' => $this->faker->randomElement(DistanceFormula::getConstants()),
         ];
     }

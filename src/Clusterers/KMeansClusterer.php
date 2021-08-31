@@ -45,7 +45,7 @@ class KMeansClusterer extends BaseClusterer
         return is_int($this->config->k)
             && is_int($this->config->iterations)
             && is_int($this->config->samples)
-            && is_int($this->config->convergenceMaximum)
+            && is_float($this->config->convergenceMaximum)
             && in_array($this->config->distanceFormula, DistanceFormula::getConstants());
     }
 

@@ -24,7 +24,7 @@ class Config extends DataTransferObject
      *
      * @see config/marker-clusterer.php, k_means
      */
-    public ?int $convergenceMaximum;
+    public ?float $convergenceMaximum;
 
     /**
      * Maximum number of clustering samples.
