@@ -9,5 +9,5 @@ interface Clusterable
     /**
      * Get the latitude/longitude coordinate of the point.
      */
-    function getClusterableCoordinate(): Coordinate;
+    public function getClusterableCoordinate(): Coordinate;
 }
