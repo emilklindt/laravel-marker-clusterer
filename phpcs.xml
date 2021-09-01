@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<ruleset name="PHP_CodeSniffer">
+    <description>The coding standard for the project.</description>
+    <rule ref="PSR2"/>
+
+    <file>config</file>
+    <file>src</file>
+    <file>tests</file>
+
+    <exclude-pattern>vendor/*</exclude-pattern>
+
+    <!-- Show progression -->
+    <arg value="p"/>
+
+    <!-- Allow tests to be snake case -->
+    <rule ref="PSR1.Methods.CamelCapsMethodName">
+        <exclude-pattern>tests/*</exclude-pattern>
+    </rule>
+</ruleset>

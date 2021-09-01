@@ -4,7 +4,8 @@ namespace EmilKlindt\MarkerClusterer\Test\Factories;
 
 use Faker\Generator as Faker;
 
-abstract class Factory {
+abstract class Factory
+{
     /**
      * Model to be created.
      */
@@ -36,5 +37,5 @@ abstract class Factory {
     /**
      * Define the data used for model.
      */
-    protected abstract function define(): array;
+    abstract protected function define(): array;
 }

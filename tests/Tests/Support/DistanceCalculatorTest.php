@@ -20,7 +20,7 @@ class DistanceCalculatorTest extends TestCase
     }
 
     /** @test */
-    public function it_throws_exception_for_invalid_distance_formula()
+    public function itThrowsExceptionForInvalidDistanceFormula()
     {
         $this->expectException(InvalidArgumentException::class);
 

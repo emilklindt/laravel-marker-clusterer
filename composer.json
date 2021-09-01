@@ -27,7 +27,8 @@
         "mockery/mockery": "^1.4",
         "orchestra/testbench": "^5.0|^6.0",
         "phpunit/phpunit": "^9.3",
-        "fakerphp/faker": "^1.15"
+        "fakerphp/faker": "^1.15",
+        "squizlabs/php_codesniffer": "^3.6"
     },
     "scripts": {
         "test": "vendor/bin/phpunit",
