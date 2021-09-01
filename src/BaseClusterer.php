@@ -102,27 +102,27 @@ abstract class BaseClusterer
     /**
      * Merge the provided config with default values.
      */
-    protected abstract function mergeDefaultConfig(): void;
+    abstract protected function mergeDefaultConfig(): void;
 
     /**
      * Perform necessary setup of the algorithm.
      */
-    protected abstract function setup(): void;
+    abstract protected function setup(): void;
 
     /**
      * Validate that the config is sufficient for the algorithm.
      */
-    protected abstract function validateConfig(): bool;
+    abstract protected function validateConfig(): bool;
 
     /**
      * Add a new marker to the clusterer.
      */
-    public abstract function addMarker(Clusterable $marker): self;
+    abstract public function addMarker(Clusterable $marker): self;
 
     /**
      * Get the clusters derived from the added markers.
      */
-    public abstract function getClusters(): Collection;
+    abstract public function getClusters(): Collection;
 
     /**
      * Calculate the mean of each clusters as new centroid.
@@ -150,7 +150,7 @@ abstract class BaseClusterer
     /**
      * Shorthand method for clustering a group of markers.
      */
-    static function cluster(Collection $markers, ?Config $config = null): Collection
+    public static function cluster(Collection $markers, ?Config $config = null): Collection
     {
         $clusterer = new static($config);
 

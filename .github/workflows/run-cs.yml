@@ -1,4 +1,4 @@
-name: Unit Tests
+name: Coding Standard Tests
 
 on:
   push:
@@ -10,16 +10,11 @@ on:
 
 jobs:
   php-tests:
+    name: CS Test
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
       COMPOSER_NO_INTERACTION: 1
-
-    strategy:
-      matrix:
-        php: [7.4]
-
-    name: php ${{ matrix.php }}
 
     steps:
     - name: Checkout code
@@ -28,7 +23,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: ${{ matrix.php }}
+        php-version: 7.4
         tools: composer:v2
         extensions: curl, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, iconv
         coverage: none
@@ -36,5 +31,5 @@ jobs:
     - name: Install dependencies
       run: composer update --prefer-stable --prefer-dist --no-interaction --no-suggest
 
-    - name: Execute tests
-      run: ./vendor/bin/phpunit
+    - name: Execute CS tests
+      run: ./vendor/bin/phpcs
