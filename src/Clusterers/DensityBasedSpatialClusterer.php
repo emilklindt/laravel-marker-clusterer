@@ -17,11 +17,6 @@ class DensityBasedSpatialClusterer extends BaseClusterer
     private Collection $visited;
 
     /**
-     * Matrix (2-dimensional array) of distances from marker to marker
-     */
-    private Collection $distanceMatrix;
-
-    /**
      * Temporary collection for caching of coordinates.
      */
     private Collection $coordinates;
@@ -71,7 +66,6 @@ class DensityBasedSpatialClusterer extends BaseClusterer
     public function getClusters(): Collection
     {
         $this->clearVisited();
-        $this->setDistanceMatrix();
 
         $noise = new Collection();
 
@@ -158,51 +152,18 @@ class DensityBasedSpatialClusterer extends BaseClusterer
     }
 
     /**
-     * Calculate and set values for distance matrix
-     */
-    private function setDistanceMatrix(): void
-    {
-        $this->distanceMatrix = new Collection();
-
-        // calculate distance matrix
-        $this->coordinates
-            ->each(function (Coordinate $coordinate, int $y) {
-                $this->distanceMatrix->put($y, new Collection());
-
-                for ($x = 0; $x <= $y; $x++) {
-                    $this->distanceMatrix->get($y)->put(
-                        $x,
-                        $this->distanceCalculator
-                            ->measure($coordinate, $this->coordinates->get($x))
-                    );
-                }
-            });
-
-        // diagonally mirror matrix, for faster read access
-        $this->markers
-            ->each(function (Clusterable $marker, int $y) {
-                for ($x = $y + 1; $x < $this->markers->count(); $x++) {
-                    $this->distanceMatrix->get($y)->put(
-                        $x,
-                        $this->distanceMatrix
-                            ->get($x)
-                            ->get($y)
-                    );
-                }
-            });
-    }
-
-    /**
      * Get index markers within epsilon distance of marker index
      */
     private function getIndexesWithinNeighborhood(int $index): Collection
     {
-        return $this->distanceMatrix
-            ->get($index)
-            ->filter(function (float $distance) {
-                return $distance < $this->config->epsilon;
+        $origin = $this->coordinates->get($index);
+
+        return $this->coordinates
+            ->filter(function (Coordinate $coordinate) use ($origin) {
+                return $this->distanceCalculator->measure($origin, $coordinate)
+                    < $this->config->epsilon;
             })
-            ->map(function (float $distance, int $index) {
+            ->map(function (Coordinate $coordinate, int $index) {
                 return $index;
             });
     }
