@@ -1,8 +1,9 @@
 # Server-side marker clustering in Laravel
 
+[![Unit Test status](https://img.shields.io/github/workflow/status/emilklindt/laravel-marker-clusterer/Unit%20Tests/main?style=flat-square)](https://github.com/emilklindt/laravel-marker-clusterer/actions/workflows/run-tests.yml)
 [![Packagist Version (including pre-releases)](https://img.shields.io/packagist/v/emilklindt/laravel-marker-clusterer.svg?style=flat-square)](https://packagist.org/packages/emilklindt/laravel-marker-clusterer)
-![MIT License](https://img.shields.io/packagist/l/emilklindt/laravel-marker-clusterer.svg?style=flat-square)
 ![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/emilklindt/laravel-marker-clusterer.svg?style=flat-square)
+![MIT License](https://img.shields.io/packagist/l/emilklindt/laravel-marker-clusterer.svg?style=flat-square)
 
 The `emilklindt/laravel-marker-clusterer` package allows you to cluster markers in Laravel, before sending them to the client-side.
 
