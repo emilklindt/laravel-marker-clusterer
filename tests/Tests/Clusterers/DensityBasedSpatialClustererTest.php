@@ -2,13 +2,14 @@
 
 namespace EmilKlindt\MarkerClusterer\Tests\Clusterers;
 
+use Illuminate\Support\Collection;
 use EmilKlindt\MarkerClusterer\Models\Config;
 use EmilKlindt\MarkerClusterer\Test\TestCase;
 use EmilKlindt\MarkerClusterer\Models\Cluster;
 use EmilKlindt\MarkerClusterer\Enums\DistanceFormula;
+use EmilKlindt\MarkerClusterer\Interfaces\Clusterable;
 use EmilKlindt\MarkerClusterer\Exceptions\InvalidAlgorithmConfig;
 use EmilKlindt\MarkerClusterer\Clusterers\DensityBasedSpatialClusterer;
-use EmilKlindt\MarkerClusterer\Interfaces\Clusterable;
 
 class DensityBasedSpatialClustererTest extends TestCase
 {
@@ -30,6 +31,31 @@ class DensityBasedSpatialClustererTest extends TestCase
         new DensityBasedSpatialClusterer($config);
 
         $this->markTestAsPassed();
+    }
+
+    /** @test */
+    public function it_returns_clusters_and_markers_collection()
+    {
+        $config = $this->configFactory->make([
+            'minSamples' => 2,
+            'includeNoise' => true,
+        ]);
+
+        $clusterer = new DensityBasedSpatialClusterer($config);
+
+        $clusters = $clusterer
+            ->addMarker($this->makeMarker())
+            ->addMarker($this->makeMarker())
+            ->getClusters();
+
+        $this->assertInstanceOf(Collection::class, $clusters);
+        $this->assertContainsOnlyInstancesOf(Cluster::class, $clusters);
+
+        $this->assertContainsOnlyInstancesOf(Clusterable::class, $clusters
+            ->map(function (Cluster $cluster) {
+                return $cluster->markers;
+            })
+            ->flatten());
     }
 
     /** @test */
@@ -91,15 +117,8 @@ class DensityBasedSpatialClustererTest extends TestCase
         $clusters = $clusterer->getClusters();
 
         $this->assertCount(2, $clusters);
-
         $this->assertEquals(5, $clusters->sum(function (Cluster $cluster) {
             return $cluster->markers->count();
         }));
-
-        $this->assertContainsOnlyInstancesOf(Clusterable::class, $clusters
-            ->map(function (Cluster $cluster) {
-                return $cluster->markers;
-            })
-            ->flatten());
     }
 }

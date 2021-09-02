@@ -63,8 +63,15 @@ class Config extends DataTransferObject
      * minSamples. If true, markers not within epsilon distance
      * of at least minSamples, will be included anyways, in a
      * solo cluster for that given point.
-     *
-     * @var boolean|null
      */
     public ?bool $includeNoise;
+
+    /**
+     * Whether to use geohashes as only limitation for considering
+     * a marker neighboring to another marker. Geohash length is
+     * calculated from the epsilon value, to this is still valid.
+     *
+     * @see config/marker-clusterer.php, dbscan
+     */
+    public ?bool $useGeohashNeighboring;
 }

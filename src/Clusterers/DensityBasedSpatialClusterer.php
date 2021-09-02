@@ -3,29 +3,60 @@
 namespace EmilKlindt\MarkerClusterer\Clusterers;
 
 use Illuminate\Support\Collection;
+use League\Geotools\Geohash\Geohash;
 use League\Geotools\Coordinate\Coordinate;
 use EmilKlindt\MarkerClusterer\BaseClusterer;
 use EmilKlindt\MarkerClusterer\Models\Cluster;
 use EmilKlindt\MarkerClusterer\Enums\DistanceFormula;
+use EmilKlindt\MarkerClusterer\Support\GeohashHelper;
 use EmilKlindt\MarkerClusterer\Interfaces\Clusterable;
+use EmilKlindt\MarkerClusterer\Support\GeohashNeighbor;
+use EmilKlindt\MarkerClusterer\Traits\HasDistanceMatrix;
 
 class DensityBasedSpatialClusterer extends BaseClusterer
 {
-    /**
-     * Array to keep track of visited nodes, by index
-     */
-    private Collection $visited;
+    private const NOISE = -1;
+
+    public const GEOHASH_LENGTH_METERS_MAP = [
+        1 => 2500000,
+        2 => 630000,
+        3 => 78000,
+        4 => 20000,
+        5 => 2400,
+        6 => 610,
+        7 => 76,
+        8 => 19,
+        9 => 2.4,
+        10 => 0.6,
+        11 => 0.074,
+    ];
 
     /**
-     * Temporary collection for caching of coordinates.
+     * Cluster counter, to keep track of id.
      */
-    private Collection $coordinates;
+    private int $n;
+
+    /**
+     * Array to keep track of node labels, by index.
+     */
+    private array $labels;
+
+    /**
+     * Array to store geohashes for added markers.
+     */
+    private array $geohashes;
+
+    /**
+     * Length of the geohashes, determined by epsilon.
+     */
+    private int $geohashLength;
 
     /**
      * Merge the provided config with default values.
      */
     protected function mergeDefaultConfig(): void
     {
+        $this->setDefaultConfigValue('useGeohashNeighboring', config('marker-clusterer.dbscan.default_use_geohash_neighboring'));
         $this->setDefaultConfigValue('distanceFormula', config('marker-clusterer.default_distance_formula'));
         $this->setDefaultConfigValue('includeNoise', config('marker-clusterer.dbscan.default_include_noise'));
     }
@@ -35,7 +66,23 @@ class DensityBasedSpatialClusterer extends BaseClusterer
      */
     protected function setup(): void
     {
-        $this->coordinates = new Collection();
+        $this->geohashes = [];
+    }
+
+    /**
+     * A more precise geohash will include less results in the
+     * neighboring search, and therefore result in faster over-
+     * all performance of the clustering
+     */
+    private function setGeohashLengthFromEpsilon(): void
+    {
+        foreach (self::GEOHASH_LENGTH_METERS_MAP as $geohashLength => $maxErrorMeters) {
+            if ($maxErrorMeters < $this->config->epsilon) {
+                break;
+            }
+
+            $this->geohashLength = $geohashLength;
+        }
     }
 
     /**
@@ -54,10 +101,33 @@ class DensityBasedSpatialClusterer extends BaseClusterer
      */
     public function addMarker(Clusterable $marker): self
     {
-        $this->markers->add($marker);
-        $this->coordinates->add($marker->getClusterableCoordinate());
+        $index = $this->markers->count();
+
+        $this->markers->put($index, $marker);
+        $this->setGeohash($index, $marker->getClusterableCoordinate());
 
         return $this;
+    }
+
+    /**
+     * Store the geohashed value of the coordinate
+     */
+    private function setGeohash(int $index, Coordinate $coordinate): void
+    {
+        if (!isset($this->geohashLength)) {
+            $this->setGeohashLengthFromEpsilon();
+        }
+
+        $hasher = new Geohash();
+        $hasher->encode($coordinate, $this->geohashLength);
+
+        $hash = $hasher->getGeohash();
+
+        if (!isset($this->geohashes[$hash])) {
+            $this->geohashes[$hash] = [$index];
+        } else {
+            $this->geohashes[$hash][] = $index;
+        }
     }
 
     /**
@@ -65,39 +135,27 @@ class DensityBasedSpatialClusterer extends BaseClusterer
      */
     public function getClusters(): Collection
     {
-        $this->clearVisited();
-
-        $noise = new Collection();
+        $this->clearLabels();
+        $this->n = 0;
 
         // visit each point and expand clusters meeting sample criterion
-        $this->markers
-            ->each(function (Clusterable $marker, int $p) use ($noise) {
-                if ($this->visited->contains($p)) {
-                    return;
-                }
+        foreach ($this->markers as $p => $marker) {
+            if (!is_null($this->labels[$p])) {
+                continue;
+            }
 
-                $neighborhoodIndexes = $this->getIndexesWithinNeighborhood($p);
+            $neighborhoodIndexes = $this->getIndexesWithinNeighborhood($p);
 
-                if ($neighborhoodIndexes->count() >= $this->config->minSamples) {
-                    $this->expandClusterNeighborhood($neighborhoodIndexes);
-                } else {
-                    $this->visited->push($p);
-                    $noise->push($p);
-                }
-            });
+            if (count($neighborhoodIndexes) < $this->config->minSamples) {
+                $this->labels[$p] = self::NOISE;
+                continue;
+            }
 
-        // create indvidual clusters for noise, if included
-        if ($this->config->includeNoise) {
-            $noise
-                ->each(function (int $p) {
-                    $this->clusters->push(new Cluster([
-                        'markers' => new Collection([
-                            $this->markers->get($p)
-                        ])
-                    ]));
-                });
+            $this->expandClusterNeighborhood($neighborhoodIndexes);
+            $this->n++;
         }
 
+        $this->createClustersFromLabels();
         $this->updateClusterCentroids();
 
         return $this->clusters;
@@ -107,64 +165,110 @@ class DensityBasedSpatialClusterer extends BaseClusterer
      * Continously consider all points within epsilon as part of the
      * cluster, untill no more points are within epsilon distance.
      */
-    private function expandClusterNeighborhood(Collection $queue): void
+    private function expandClusterNeighborhood(array $queue): void
     {
-        $clusterIndexes = new Collection();
+        while (($p = array_pop($queue)) !== null) {
+            if (!is_null($this->labels[$p])) {
+                if ($this->labels[$p] === self::NOISE) {
+                    $this->labels[$p] = $this->n;
+                }
 
-        while (!$queue->isEmpty()) {
-            $p = $queue->pop();
-
-            if ($this->visited->contains($p)) {
                 continue;
             }
 
-            $this->visited->push($p);
-            $clusterIndexes->push($p);
+            $this->labels[$p] = $this->n;
 
-            $queue->push(...$this->getIndexesWithinNeighborhood($p));
+            $neighborIndexes = $this->getIndexesWithinNeighborhood($p);
+
+            if (count($neighborIndexes) >= $this->config->minSamples) {
+                $queue = array_unique(array_merge($queue, $neighborIndexes));
+            }
+        }
+    }
+
+    /**
+     * Create a clusters based on labels
+     */
+    private function createClustersFromLabels(): void
+    {
+        $this->clusters = new Collection(array_fill(0, $this->n, null));
+
+        $this->markers
+            ->each(function (Clusterable $marker, int $p) {
+                $label = $this->labels[$p];
+
+                // avoid clustering noise, if not included by config
+                if ($label === self::NOISE && !$this->config->includeNoise) {
+                    return;
+                }
+
+                $cluster = $this->clusters->get($label);
+
+                if ($cluster === null) {
+                    $cluster = new Cluster([
+                        'markers' => new Collection(),
+                    ]);
+
+                    $this->clusters->put($label, $cluster);
+                }
+
+                $cluster->markers->add($marker);
+            });
+    }
+
+    /**
+     * Reset labels for nodes, from previous runs
+     */
+    private function clearLabels(): void
+    {
+        $this->labels = array_fill(0, $this->markers->count(), null);
+    }
+
+    private function getIndexesInGeohashNeighborhood(Coordinate $origin): array
+    {
+        $hasher = new Geohash();
+        $hasher->encode($origin, $this->geohashLength);
+
+        $geohash = $hasher->getGeohash();
+        $neighbors = GeohashHelper::getNeighbors($geohash);
+
+        $indexes = [...$this->geohashes[$geohash]];
+
+        foreach ($neighbors as $neighbor) {
+            if (!isset($this->geohashes[$neighbor])) {
+                continue;
+            }
+
+            array_push($indexes, ...$this->geohashes[$neighbor]);
         }
 
-        $this->createClusterFromIndexes($clusterIndexes);
-    }
-
-    /**
-     * Create a new cluster from a collection of marker indexes
-     */
-    private function createClusterFromIndexes(Collection $indexes): void
-    {
-        $markers = $indexes
-            ->map(function (int $index) {
-                return $this->markers->get($index);
-            });
-
-        $this->clusters
-            ->push(new Cluster([
-                'markers' => $markers
-            ]));
-    }
-
-    /**
-     * Reset visited nodes, from previous runs
-     */
-    private function clearVisited(): void
-    {
-        $this->visited = new Collection();
+        return $indexes;
     }
 
     /**
      * Get index markers within epsilon distance of marker index
      */
-    private function getIndexesWithinNeighborhood(int $index): Collection
+    private function getIndexesWithinNeighborhood(int $origin): array
     {
-        $origin = $this->coordinates->get($index);
+        $originCoordinate = $this->markers->get($origin)->getClusterableCoordinate();
+        $candidates = $this->getIndexesInGeohashNeighborhood($originCoordinate);
 
-        return $this->coordinates
-            ->filter(function (Coordinate $coordinate) use ($origin) {
-                return $this->distanceCalculator->measure($origin, $coordinate)
-                    < $this->config->epsilon;
-            })
-            ->map(function (Coordinate $coordinate, int $index) {
-                return $index;
-            });
+        // avoid further precision if geohash neighboring is used
+        if ($this->config->useGeohashNeighboring === true) {
+            return $candidates;
+        }
+
+        $indexes = [];
+
+        // calculate distance to each marker, and compare with epsilon value
+        foreach ($candidates as $index) {
+            $candidateCoordinate = $this->markers->get($index)->getClusterableCoordinate();
+
+            if ($this->distanceCalculator->measure($originCoordinate, $candidateCoordinate) < $this->config->epsilon) {
+                $indexes[] = $index;
+            }
+        }
+
+        return $indexes;
     }
 }
