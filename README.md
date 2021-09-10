@@ -59,6 +59,11 @@ php artisan vendor:publish --provider="EmilKlindt\MarkerClusterer\MarkerClustere
 
 This is the contents of the file that will be published at `config/marker-clusterer.php`:
 
+<details>
+<summary>
+    Contents of the configuration file
+</summary>
+
 ```php
 return [
 
@@ -191,6 +196,7 @@ return [
     ]
 ];
 ```
+</details>
 
 ## Usage
 
