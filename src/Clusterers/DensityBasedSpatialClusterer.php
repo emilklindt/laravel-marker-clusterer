@@ -56,9 +56,20 @@ class DensityBasedSpatialClusterer extends BaseClusterer
      */
     protected function mergeDefaultConfig(): void
     {
-        $this->setDefaultConfigValue('useGeohashNeighboring', config('marker-clusterer.dbscan.default_use_geohash_neighboring'));
-        $this->setDefaultConfigValue('distanceFormula', config('marker-clusterer.default_distance_formula'));
-        $this->setDefaultConfigValue('includeNoise', config('marker-clusterer.dbscan.default_include_noise'));
+        $this->setDefaultConfigValue(
+            'useGeohashNeighboring',
+            config('marker-clusterer.dbscan.default_use_geohash_neighboring')
+        );
+
+        $this->setDefaultConfigValue(
+            'distanceFormula',
+            config('marker-clusterer.default_distance_formula')
+        );
+
+        $this->setDefaultConfigValue(
+            'includeNoise',
+            config('marker-clusterer.dbscan.default_include_noise')
+        );
     }
 
     /**

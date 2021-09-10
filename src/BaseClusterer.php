@@ -160,5 +160,4 @@ abstract class BaseClusterer
      * Get the clusters derived from the added markers.
      */
     abstract public function getClusters(): Collection;
-
 }
