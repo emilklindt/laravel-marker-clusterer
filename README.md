@@ -77,6 +77,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Default Distance Formula
+    |--------------------------------------------------------------------------
+    |
+    | The default formula for calculating distance from one coordinate to
+    | another. Possible values are constants of the DistanceFormula enum.
+    |
+    */
+
+    'default_distance_formula' => \EmilKlindt\MarkerClusterer\Enums\DistanceFormula::MANHATTAN,
+
+    /*
+    |--------------------------------------------------------------------------
     | K-means Clustering
     |--------------------------------------------------------------------------
     |
@@ -112,7 +124,7 @@ return [
         |
         */
 
-        'default_convergence_maximum' => 100,
+        'default_convergence_maximum' => 100.0,
 
         /*
         |--------------------------------------------------------------------------
@@ -131,18 +143,6 @@ return [
         */
 
         'default_maximum_samples' => 10,
-
-        /*
-        |--------------------------------------------------------------------------
-        | Default Distance Formula
-        |--------------------------------------------------------------------------
-        |
-        | The default formula for calculating distance from one coordinate to
-        | another. Possible values are constants of the DistanceFormula enum.
-        |
-        */
-
-        'default_distance_formula' => \EmilKlindt\MarkerClusterer\Enums\DistanceFormula::MANHATTAN,
     ],
 
     /*
@@ -167,6 +167,27 @@ return [
         */
 
         'default_include_noise' => true,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Default Use Geohash Neighboring
+        |--------------------------------------------------------------------------
+        |
+        | When response time is critical and precision is not, it may sometimes
+        | be beneficial to use geohashing for neighbor searching only. A geohash
+        | is calculated for every marker when added to the clusterer. This is
+        | used to limit the scope of distance calculations to only points that
+        | fall within neighboring geohashes.
+        |
+        | Enabling this setting will remove the last step, which is calculating
+        | exact distance to each marker in the neighboring geohashes, and then
+        | comparing it against the epsilon value.
+        |
+        | The geohash precision is based on the epsilon value, so by specifycing
+        | a larger epsilon value, more markers will be considered neighbors etc.
+        */
+
+        'default_use_geohash_neighboring' => false,
     ]
 ];
 ```

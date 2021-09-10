@@ -107,5 +107,26 @@ return [
         */
 
         'default_include_noise' => true,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Default Use Geohash Neighboring
+        |--------------------------------------------------------------------------
+        |
+        | When response time is critical and precision is not, it may sometimes
+        | be beneficial to use geohashing for neighbor searching only. A geohash
+        | is calculated for every marker when added to the clusterer. This is
+        | used to limit the scope of distance calculations to only points that
+        | fall within neighboring geohashes.
+        |
+        | Enabling this setting will remove the last step, which is calculating
+        | exact distance to each marker in the neighboring geohashes, and then
+        | comparing it against the epsilon value.
+        |
+        | The geohash precision is based on the epsilon value, so by specifycing
+        | a larger epsilon value, more markers will be considered neighbors etc.
+        */
+
+        'default_use_geohash_neighboring' => false,
     ]
 ];
